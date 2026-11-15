@@ -1,0 +1,41 @@
+services:
+  cfd-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    environment:
+      NODE_ENV: production
+      ALLOW_GUEST_SIMULATIONS: "true"
+      PORT: 3000
+      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-http://localhost:3000}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-}
+      CASE_TIMEOUT_MS: ${CASE_TIMEOUT_MS:-600000}
+      MAX_CONCURRENT_JOBS: ${MAX_CONCURRENT_JOBS:-10}
+      OPENFOAM_EXEC_MODE: local
+      OPENFOAM_BASHRC: /usr/lib/openfoam/openfoam2606/etc/bashrc
+    tmpfs:
+      - /tmp/of_cases:rw,noexec,nosuid,size=2g,uid=10001,gid=10001
+      - /tmp:rw,noexec,nosuid,size=512m
+    ports:
+      - "127.0.0.1:3000:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+          pids: 256
+        reservations:
+          cpus: '1.0'
+          memory: 1G
